@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKEA Ops Tools</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--border2:#3d444d;--blue:#0051BA;--blue-dark:#003A8C;--blue-mid:#1a6dd4;--yellow:#FFDA1A;--green:#3fb950;--red:#f85149;--orange:#f0883e;--purple:#a371f7;--teal:#00c48c;--text:#e6edf3;--text-muted:#8b949e;--text-dim:#656d76;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--mono:'SFMono-Regular',Consolas,monospace;--tb:200ms ease;--tf:120ms ease;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,81,186,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,81,186,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse at center,rgba(0,81,186,.18) 0%,transparent 70%);pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 64px}
+.header{padding:60px 0 0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;animation:fadeUp .5s ease both}
+.logo-row{display:flex;align-items:center;gap:14px}
+.logo-icon{width:48px;height:48px;background:linear-gradient(135deg,#003A8C,#1a6dd4);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 24px rgba(0,81,186,.4);border:1px solid rgba(0,81,186,.5);flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;align-items:flex-start}
+.logo-title{font-size:22px;font-weight:800;letter-spacing:2.5px;color:var(--yellow);text-transform:uppercase}
+.logo-tagline{font-size:10px;color:var(--text-dim);letter-spacing:1px;font-family:var(--mono);margin-top:1px}
+.header-bar{width:56px;height:2px;background:linear-gradient(90deg,transparent,var(--yellow),transparent);border-radius:2px;margin-top:2px}
+.header-desc{font-size:12px;color:var(--text-muted);max-width:420px;line-height:1.7}
+.apps-section{padding-top:52px;display:flex;flex-direction:column;align-items:center;gap:24px;animation:fadeUp .5s .1s ease both;opacity:0;animation-fill-mode:forwards}
+.section-label{font-size:9px;font-weight:700;letter-spacing:2.5px;color:var(--text-dim);text-transform:uppercase;display:flex;align-items:center;gap:12px;width:100%}
+.section-label-line{flex:1;height:1px;background:var(--border)}
+.apps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%}
+@media(max-width:680px){.apps-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:440px){.apps-grid{grid-template-columns:1fr}}
+.app-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 18px 16px;text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:9px;cursor:pointer;overflow:hidden;transition:transform var(--tb),box-shadow var(--tb),border-color var(--tb)}
+.app-card:hover{transform:translateY(-3px);border-color:rgba(0,81,186,.6);box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 0 1px rgba(0,81,186,.2)}
+.app-card:active{transform:translateY(-1px)}
+.card-accent{position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0}
+.app-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.app-name{font-size:13px;font-weight:700;line-height:1.2}
+.app-desc{font-size:11px;color:var(--text-muted);line-height:1.55;flex:1}
+.app-footer{display:flex;align-items:center;justify-content:space-between;padding-top:4px;margin-top:auto}
+.app-tag{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+.app-arrow{font-size:14px;color:var(--text-dim);transition:color var(--tf),transform var(--tf)}
+.app-card:hover .app-arrow{color:var(--yellow);transform:translateX(3px)}
+.add-card{background:transparent;border:1px dashed var(--border);border-radius:12px;padding:20px 18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:158px;color:var(--text-dim);font-size:11px;font-weight:600;text-align:center;transition:border-color var(--tb),background var(--tb),color var(--tb)}
+.add-card:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,81,186,.04)}
+.add-icon{width:36px;height:36px;border-radius:50%;border:2px dashed currentColor;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .2s ease}
+.add-card:hover .add-icon{transform:scale(1.1) rotate(90deg)}
+.card-1{animation:fadeUp .4s .18s ease both;opacity:0;animation-fill-mode:forwards}
+.card-2{animation:fadeUp .4s .26s ease both;opacity:0;animation-fill-mode:forwards}
+.card-3{animation:fadeUp .4s .34s ease both;opacity:0;animation-fill-mode:forwards}
+.card-4{animation:fadeUp .4s .42s ease both;opacity:0;animation-fill-mode:forwards}
+.card-5{animation:fadeUp .4s .50s ease both;opacity:0;animation-fill-mode:forwards}
+.card-6{animation:fadeUp .4s .58s ease both;opacity:0;animation-fill-mode:forwards}
+.card-7{animation:fadeUp .4s .66s ease both;opacity:0;animation-fill-mode:forwards}
+.card-8{animation:fadeUp .4s .74s ease both;opacity:0;animation-fill-mode:forwards}
+.card-9{animation:fadeUp .4s .82s ease both;opacity:0;animation-fill-mode:forwards}
+.footer{position:relative;z-index:1;text-align:center;padding:20px;font-size:10px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.5px;border-top:1px solid var(--border);margin-top:60px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+<div class="page">
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-icon">🚛</div>
+      <div class="logo-text">
+        <div class="logo-title">IKEA Ops Tools</div>
+        <div class="logo-tagline">internal suite · logistics &amp; routing</div>
+      </div>
+    </div>
+    <div class="header-bar"></div>
+    <div class="header-desc">Internal tooling for route management, dispatch operations, and ecommerce delivery workflows.</div>
+  </div>
+  <div class="apps-section">
+    <div class="section-label"><span class="section-label-line"></span>Applications<span class="section-label-line"></span></div>
+    <div class="apps-grid">
+      <a class="app-card card-1" href="ruteador-ikea-v9.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#0051BA,#1a6dd4)"></div>
+        <div class="app-icon" style="background:rgba(0,81,186,.15);border:1px solid rgba(0,81,186,.3)">🗺️</div>
+        <div class="app-name">Route Planner</div>
+        <div class="app-desc">PostSales dispatch dashboard — routes, repeats, pickups and delivery management.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(0,81,186,.15);color:#7bb8ff">PostSales</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-2" href="auditoria_rutas.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#00c48c,#00a374)"></div>
+        <div class="app-icon" style="background:rgba(0,196,140,.12);border:1px solid rgba(0,196,140,.25)">🔍</div>
+        <div class="app-name">Route Auditor</div>
+        <div class="app-desc">Commune-by-vehicle analysis, address validation and ISO detection.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(0,196,140,.12);color:#00c48c">Audit</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-3" href="ruteo-24hrs.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#f0883e,#d4722e)"></div>
+        <div class="app-icon" style="background:rgba(240,136,62,.12);border:1px solid rgba(240,136,62,.25)">⚡</div>
+        <div class="app-name">24H Route Engine</div>
+        <div class="app-desc">SCI pre-routing, SimpliRoute plan cross-check and final export pipeline.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(240,136,62,.12);color:#f0883e">24H</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-4" href="isos_faltantes_geo.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#a371f7,#7c4ddc)"></div>
+        <div class="app-icon" style="background:rgba(163,113,247,.12);border:1px solid rgba(163,113,247,.25)">📍</div>
+        <div class="app-name">Geo ISO Tracker</div>
+        <div class="app-desc">Unassigned visits review, base cross-check and duplicate ISO detection.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(163,113,247,.12);color:#a371f7">Geo</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-5" href="app_ruteo_pr.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#f7cc1a,#d4aa00)"></div>
+        <div class="app-icon" style="background:rgba(247,204,26,.12);border:1px solid rgba(247,204,26,.25)">📦</div>
+        <div class="app-name">PR Route Builder</div>
+        <div class="app-desc">Pre-route and post-route for the PR channel with optimized final exports.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(247,204,26,.12);color:#f7cc1a">PR</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-6" href="reporte_rutas.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#f05454,#c73d3d)"></div>
+        <div class="app-icon" style="background:rgba(240,84,84,.12);border:1px solid rgba(240,84,84,.25)">📊</div>
+        <div class="app-name">Route Reporter</div>
+        <div class="app-desc">Live route progress tracking, planning metrics and per-vehicle status.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(240,84,84,.12);color:#f05454">Report</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-7" href="consultor_isos.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#00c48c,#009e75)"></div>
+        <div class="app-icon" style="background:rgba(0,196,140,.12);border:1px solid rgba(0,196,140,.25)">🔎</div>
+        <div class="app-name">ISO Inspector</div>
+        <div class="app-desc">Query delivery status, comments and non-delivery reasons per ISO. Auto IKEA filter.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(0,196,140,.12);color:#00c48c">ISOs</span><span class="app-arrow">→</span></div>
+      </a>
+      <a class="app-card card-8" href="verificador_vehiculos.html">
+        <div class="card-accent" style="background:linear-gradient(90deg,#a371f7,#7c4ddc)"></div>
+        <div class="app-icon" style="background:rgba(163,113,247,.12);border:1px solid rgba(163,113,247,.25)">🚛</div>
+        <div class="app-name">Fleet Verifier</div>
+        <div class="app-desc">SimpliRoute + Report cross-check. Validates plate assignment per vehicle in plan.</div>
+        <div class="app-footer"><span class="app-tag" style="background:rgba(163,113,247,.12);color:#a371f7">Fleet</span><span class="app-arrow">→</span></div>
+      </a>
+      <div class="app-card add-card card-9" onclick="alert('Coming soon')">
+        <div class="add-icon">+</div>
+        <span>New application</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footer">IKEA Operations Tools &middot; Internal system &middot; <span id="yr"></span></div>
+<script>document.getElementById('yr').textContent=new Date().getFullYear()</script>
+</body>
+</html>
